@@ -2195,7 +2195,7 @@ ACMD(leader)
 		clif->message(fd, "This command is reserved for Battlegrounds Only.");
 	if( sd->ud.skilltimer != INVALID_TIMER )
 		clif->message(fd, "Command not allow while casting a skill.");
-	else if (hBG_config_get("battle_configuration/hBG_leader_change"))
+	else if (!(hBG_config_get("battle_configuration/hBG_leader_change")))
 		clif->message(fd, "This command is disabled.");
 	else if (!(hBGd->leader_char_id == sd->status.char_id))
 		clif->message(fd, "This command is reserved for Team Leaders Only.");
