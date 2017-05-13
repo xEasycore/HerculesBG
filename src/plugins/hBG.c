@@ -149,7 +149,8 @@ int hBG_idle_announce,
 	hBG_ip_check,
 	hBG_from_town_only,
 	hBG_enabled,
-	hBG_xy_interval;
+	hBG_xy_interval,
+	hBG_leader_change;
 
 /**
  * BG Fame list types
@@ -2174,6 +2175,52 @@ ACMD(reportafk)
 	return false;
 }
 
+/**
+ * Change Team Leader.
+ */
+ACMD(leader)
+{
+	struct map_session_data *pl_sd = NULL;
+	struct hBG_data *hBGd = NULL;
+	struct hBG_map_session_data *hBGsd = NULL;
+	struct hBG_map_session_data *hBGpl_sd = NULL;
+	struct battleground_data *bgd = NULL;
+	
+	if ((hBGsd = getFromMSD(sd, 1)) == NULL) {
+		clif->message(fd, "You are not in battlegrounds.");
+		return false;
+	}
+	
+	if ((bgd = bg->team_search(sd->bg_id)) == NULL || (hBGd = getFromBGDATA(bgd, 0)) == NULL)
+		clif->message(fd, "This command is reserved for Battlegrounds Only.");
+	if( sd->ud.skilltimer != INVALID_TIMER )
+		clif->message(fd, "Command not allow while casting a skill.");
+	else if (hBG_config_get("battle_configuration/hBG_leader_change"))
+		clif->message(fd, "This command is disabled.");
+	else if (!(hBGd->leader_char_id == sd->status.char_id))
+		clif->message(fd, "This command is reserved for Team Leaders Only.");
+	else if (!*message)
+		clif->message(fd, "Please, enter the character name (usage: @leader <name>).");
+	else if ((pl_sd = map->nick2sd(message)) == NULL)
+		clif->message(fd, msg_txt(3)); // Character not found.
+	else if ((hBGpl_sd = getFromMSD(pl_sd, 0)) == NULL)
+		clif->message(fd, "Destination Player is not in battlegrounds.");
+	else if (sd->bg_id != pl_sd->bg_id)
+		clif->message(fd, "Destination Player is not in your Team.");
+	else if (sd == pl_sd)
+		clif->message(fd, "You are already the Team Leader.");
+	else
+	{ // Everytest OK!
+		char atcmd_output[256];
+		sprintf(atcmd_output, "Team Leader transfered to [%s]", pl_sd->status.name);
+		clif->broadcast2(&sd->bl, atcmd_output, (int)strlen(atcmd_output)+1, hBGd->color, 0x190, 20, 0, 0, BG);
+		hBGd->leader_char_id = pl_sd->status.char_id;
+		clif->charnameupdate(sd);
+		clif->charnameupdate(pl_sd);
+		return 0;
+	}
+	return -1;
+}
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                     Script Commands
@@ -4418,6 +4465,13 @@ void hBG_config_read(const char *key, const char *val)
 		} else {
 			hBG_ranked_mode = value;
 		}
+	} else if (strcmpi(key, "battle_configuration/hBG_leader_change") == 0) {
+		if (value < 0 || value > 1) {
+			ShowWarning("Received Invalid Setting %d for hBG_leader_change, defaulting to 0.\n", value);
+			hBG_leader_change = 0;
+		} else {
+			hBG_leader_change = value;
+		}
 	}
 }
 
@@ -4443,6 +4497,8 @@ int hBG_config_get(const char *key)
 		return hBG_xy_interval;
 	else if (strcmpi(key, "battle_configuration/hBG_ranked_mode") == 0)
 		return hBG_ranked_mode;
+	else if (strcmpi(key, "battle_configuration/hBG_leader_change") == 0)
+		return hBG_leader_change;
 
 	return 0;
 }
@@ -4492,6 +4548,7 @@ HPExport void plugin_init(void)
 		/* @Commands */
 		addAtcommand("bgrank", bgrank);
 		addAtcommand("reportafk", reportafk);
+		addAtcommand("leader", leader);
 		
 		/* Script Commands */
 		addScriptCommand("hBG_team_create","siiiss", hBG_team_create);
@@ -4549,6 +4606,7 @@ HPExport void server_preinit(void)
 		addBattleConf("battle_configuration/hBG_reward_rates", hBG_config_read, hBG_config_get, true);
 		addBattleConf("battle_configuration/hBG_xy_interval", hBG_config_read, hBG_config_get, true);
 		addBattleConf("battle_configuration/hBG_ranked_mode", hBG_config_read, hBG_config_get, true);
+		addBattleConf("battle_configuration/hBG_leader_change", hBG_config_read, hBG_config_get, true);
 	}
 }
 
