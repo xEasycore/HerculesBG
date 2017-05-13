@@ -3681,9 +3681,29 @@ int skill_check_condition_castbegin_pre(struct map_session_data **sd, uint16 *sk
 
 int skillnotok_pre(uint16 *skill_id, struct map_session_data **sd)
 {
-	if (map->list[(*sd)->bl.m].flag.battleground && *skill_id >= GD_SKILLBASE && *skill_id <= GD_DEVELOPMENT)
-		hookStop();
+	int16 idx, m;
+	nullpo_retr(1, *sd);
+	m = (*sd)->bl.m;
+	idx = skill->get_index(*skill_id);
+ 
+	if (map->list[m].flag.battleground && (*skill_id >= GD_SKILLBASE && *skill_id <= GD_DEVELOPMENT)){
 	
+	if( pc_has_permission(*sd, PC_PERM_DISABLE_SKILL_USAGE) ){
+		hookStop();
+		return 1;
+		}
+
+	if (pc_has_permission(*sd, PC_PERM_SKILL_UNCONDITIONAL))
+		return 0; // can do any damn thing they want
+	
+	if ((*sd)->blockskill[idx]){
+		clif->skill_fail(*sd, *skill_id, USESKILL_FAIL_SKILLINTERVAL, 0);
+		hookStop();
+		return 1;
+		}
+	
+	hookStop();
+	}
 	return 0;
 }
 
