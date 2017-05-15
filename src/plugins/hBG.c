@@ -3715,28 +3715,24 @@ void clif_charnameupdate_pre(struct map_session_data **sd)
 //Prevent update Guild Info if you're in BG
 void clif_parse_GuildRequestInfo_pre(int fd, struct map_session_data **sd)
 {
-	if( (*sd) && (*sd)->bg_id ){
+	if ((*sd) && (*sd)->bg_id )
 		hookStop();
-	}
-	return 1;
+	return;
 }
 //This is not the correct way, but I could not think of another way to avoid sending the sword emblem.
 void clif_sendbgemblem_area_pre(struct map_session_data **sd)
 {
 	nullpo_retv(*sd);
-
-	if( (*sd) && (*sd)->bg_id ){
+	if ((*sd) && (*sd)->bg_id )
 		hookStop();
-	}
-	return 1;
+	return;
 }
 void clif_sendbgemblem_single_pre(int fd, struct map_session_data **sd)
 {
 	nullpo_retv(*sd);
-	if( (*sd) && (*sd)->bg_id ){
+	if ((*sd) && (*sd)->bg_id )
 		hookStop();
-	}
-	return 1;
+	return;
 }
 /**
  * Skill Pre-Hooks.
