@@ -3712,7 +3712,32 @@ void clif_charnameupdate_pre(struct map_session_data **sd)
 
 	hookStop();
 }
+//Prevent update Guild Info if you're in BG
+void clif_parse_GuildRequestInfo_pre(int fd, struct map_session_data **sd)
+{
+	if( (*sd) && (*sd)->bg_id ){
+		hookStop();
+	}
+	return 1;
+}
+//This is not the correct way, but I could not think of another way to avoid sending the sword emblem.
+void clif_sendbgemblem_area_pre(struct map_session_data **sd)
+{
+	nullpo_retv(*sd);
 
+	if( (*sd) && (*sd)->bg_id ){
+		hookStop();
+	}
+	return 1;
+}
+void clif_sendbgemblem_single_pre(int fd, struct map_session_data **sd)
+{
+	nullpo_retv(*sd);
+	if( (*sd) && (*sd)->bg_id ){
+		hookStop();
+	}
+	return 1;
+}
 /**
  * Skill Pre-Hooks.
  */
@@ -4018,7 +4043,22 @@ void clif_parse_LoadEndAck_post(int fd, struct map_session_data *sd)
 	clif->charnameupdate(sd);
 	return;
 }
+//Send charname_update every time you see someone in BG
+void clif_getareachar_unit_post(struct map_session_data *sd, struct block_list *bl)
+{
+	
+	struct view_data *vd;
 
+	vd = status->get_viewdata(bl);
+	if (vd == NULL)
+		return;
+
+	if (bl->type == BL_PC) {
+		struct map_session_data *tsd = BL_CAST(BL_PC, bl);
+		clif->charnameupdate(tsd);
+		return;
+	}
+}
 void clif_parse_UseSkillToId_post(int fd, struct map_session_data *sd)
 {
 	uint16 skill_id;
@@ -4524,6 +4564,9 @@ HPExport void plugin_init(void)
 		/* Function Pre-Hooks */
 		addHookPre(npc, parse_unknown_mapflag, npc_parse_unknown_mapflag_pre);
 		addHookPre(clif, charnameupdate, clif_charnameupdate_pre);
+		addHookPre(clif, pGuildRequestInfo,clif_parse_GuildRequestInfo_pre);
+		addHookPre(clif, sendbgemblem_area,clif_sendbgemblem_area_pre);
+		addHookPre(clif, sendbgemblem_single,clif_sendbgemblem_single_pre);
 		addHookPre(status, get_guild_id, status_get_guild_id_pre);
 		addHookPre(status, get_emblem_id, status_get_emblem_id_pre);
 		addHookPre(guild, isallied, guild_isallied_pre);
@@ -4538,6 +4581,7 @@ HPExport void plugin_init(void)
 		addHookPost(clif, pLoadEndAck, clif_parse_LoadEndAck_post);
 		addHookPost(clif, pUseSkillToId, clif_parse_UseSkillToId_post);
 		addHookPost(clif, getareachar_pc, clif_getareachar_pc_post);
+		addHookPost(clif, getareachar_unit, clif_getareachar_unit_post);
 		addHookPost(pc, update_idle_time, pc_update_idle_time_post);
 		addHookPost(pc, authok, pc_authok_post);
 		addHookPost(chrif, save, chrif_save_post);
