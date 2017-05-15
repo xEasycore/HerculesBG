@@ -3758,23 +3758,22 @@ int skillnotok_pre(uint16 *skill_id, struct map_session_data **sd)
 	m = (*sd)->bl.m;
 	idx = skill->get_index(*skill_id);
  
-	if (map->list[m].flag.battleground && (*skill_id >= GD_SKILLBASE && *skill_id <= GD_DEVELOPMENT)){
+	if (map->list[m].flag.battleground && (*skill_id >= GD_SKILLBASE && *skill_id <= GD_DEVELOPMENT)) {
 	
-	if( pc_has_permission(*sd, PC_PERM_DISABLE_SKILL_USAGE) ){
-		hookStop();
-		return 1;
-		}
+		if (pc_has_permission(*sd, PC_PERM_DISABLE_SKILL_USAGE) ){
+			hookStop();
+			return 1;
+			}
 
-	if (pc_has_permission(*sd, PC_PERM_SKILL_UNCONDITIONAL))
-		return 0; // can do any damn thing they want
-	
-	if ((*sd)->blockskill[idx]){
-		clif->skill_fail(*sd, *skill_id, USESKILL_FAIL_SKILLINTERVAL, 0);
+		if (pc_has_permission(*sd, PC_PERM_SKILL_UNCONDITIONAL))
+			return 0; // can do any damn thing they want
+
+		if ((*sd)->blockskill[idx]) {
+			clif->skill_fail((*sd), *skill_id, USESKILL_FAIL_SKILLINTERVAL, 0);
+			hookStop();
+			return 1;
+			}
 		hookStop();
-		return 1;
-		}
-	
-	hookStop();
 	}
 	return 0;
 }
