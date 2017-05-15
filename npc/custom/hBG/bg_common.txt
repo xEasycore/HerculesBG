@@ -105,48 +105,48 @@ OnInit:
 	
 // @bgmode <1-10>
 OnBGModeCommand:
-	.@X = atoi(.@atcmd_parameters$[0]);
-	if(.@X <= .TotalArenas+1 && .@X > 0){
-		if(.@X == 1)
+	.@x = atoi(.@atcmd_parameters$[0]);
+	if (.@x <= .TotalArenas+1 && .@x > 0) {
+		if (.@x == 1)
 			set $BG_Index, rand(.TotalArenas)-1;
 		else
-			set $BG_Index, .@X-3;
+			set $BG_Index, .@x-3;
 		message strcharinfo(0),"["+.BG_Names$[$BG_Index+1]+"] has been set.";
 		donpcevent "BG_Queue_Handler::OnRotate";
 		end;
-	}else{
+	} else {
 		message strcharinfo(0), "Usage: @bgmode <1-"+(.TotalArenas+1)+">";
 		dispbottom "#1 - Random",0xFFFFFF;
-		for(.@i = 0; .@i<.TotalArenas; .@i++)
+		for (.@i = 0; .@i<.TotalArenas; .@i++)
 			dispbottom "#"+(.@i+2)+" - "+.BG_Names$[.@i],.BG_Color2[.@i];			
-		end;
+			end;
 		}
 		
 // @bgsize <1-10> <min> <max>
 OnBGSizeCommand:
-	.@X = atoi(.@atcmd_parameters$[0]);
-	.@X2 = atoi(.@atcmd_parameters$[1]);
-	.@X3 = atoi(.@atcmd_parameters$[2]);
-	if(.@X2 == 0 || .@X3 == 0){
+	.@x = atoi(.@atcmd_parameters$[0]);
+	.@x2 = atoi(.@atcmd_parameters$[1]);
+	.@x3 = atoi(.@atcmd_parameters$[2]);
+	if (.@x2 == 0 || .@x3 == 0) {
 		message strcharinfo(0), "Usage: @bgsize <0-"+.TotalArenas+"> <min players> <max players>";
 		dispbottom "#0 - All Arenas",0xFFFFFF;
-		for(.@i = 0; .@i<.TotalArenas; .@i++)
+		for (.@i = 0; .@i<.TotalArenas; .@i++)
 			dispbottom "#"+(.@i+1)+" - "+.BG_Names$[.@i],.BG_Color2[.@i];			
 		end;
-		} else if(.@X2 > .@X3){
+		} else if (.@x2 > .@x3) {
 		message strcharinfo(0), "@bgsize failed: min players is higher than max players. ";
 		end;
 		}	
-	if(.@X <= .TotalArenas && .@X > 0){
-	message strcharinfo(0),"["+.BG_Names$[.@X-1]+"] min players is <"+.@X2+"> and max players is <"+.@X3+">.";
-	setarray .BG_Players_Min[.@X-1],.@X2;
-	setarray .BG_Players_Max[.@X-1],.@X3;
-	} else {
-	message strcharinfo(0),"[All Arenas] min players is <"+.@X2+"> and max players is <"+.@X3+">.";
-	setarray .BG_Players_Min[0],.@X2,.@X2,.@X2,.@X2,.@X2,.@X2,.@X2,.@X2,.@X2;
-	setarray .BG_Players_Max[0],.@X3,.@X3,.@X3,.@X3,.@X3,.@X3,.@X3,.@X3,.@X3;
-	}
-	end;
+	if (.@x <= .TotalArenas && .@x > 0) {
+			message strcharinfo(0),"["+.BG_Names$[.@x-1]+"] min players is <"+.@x2+"> and max players is <"+.@x3+">.";
+			setarray .BG_Players_Min[.@x-1],.@x2;
+			setarray .BG_Players_Max[.@x-1],.@x3;
+		} else {
+			message strcharinfo(0),"[All Arenas] min players is <"+.@x2+"> and max players is <"+.@x3+">.";
+			setarray .BG_Players_Min[0],.@x2,.@x2,.@x2,.@x2,.@x2,.@x2,.@x2,.@x2,.@x2;
+			setarray .BG_Players_Max[0],.@x3,.@x3,.@x3,.@x3,.@x3,.@x3,.@x3,.@x3,.@x3;
+		}
+		end;
 		
 OnBGStartCommand:
 	setbattleflag .hBGEnabled$, 1;
