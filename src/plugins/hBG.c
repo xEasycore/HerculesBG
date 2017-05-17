@@ -2217,9 +2217,9 @@ ACMD(leader)
 		hBGd->leader_char_id = pl_sd->status.char_id;
 		clif->charnameupdate(sd);
 		clif->charnameupdate(pl_sd);
-		return 0;
+		return true;
 	}
-	return -1;
+	return false;
 }
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -3715,25 +3715,11 @@ void clif_charnameupdate_pre(struct map_session_data **sd)
 //Prevent update Guild Info if you're in BG
 void clif_parse_GuildRequestInfo_pre(int *fd, struct map_session_data **sd)
 {
-	if ((*sd) && (*sd)->bg_id )
+	if ((*sd) && (*sd)->bg_id)
 		hookStop();
 	return;
 }
-//This is not the correct way, but I could not think of another way to avoid sending the sword emblem.
-void clif_sendbgemblem_area_pre(struct map_session_data **sd)
-{
-	nullpo_retv(*sd);
-	if ((*sd) && (*sd)->bg_id )
-		hookStop();
-	return;
-}
-void clif_sendbgemblem_single_pre(int *fd, struct map_session_data **sd)
-{
-	nullpo_retv(*sd);
-	if ((*sd) && (*sd)->bg_id )
-		hookStop();
-	return;
-}
+
 /**
  * Skill Pre-Hooks.
  */
@@ -3756,13 +3742,15 @@ int skillnotok_pre(uint16 *skill_id, struct map_session_data **sd)
  
 	if (map->list[m].flag.battleground && (*skill_id >= GD_SKILLBASE && *skill_id <= GD_DEVELOPMENT)) {
 	
-		if (pc_has_permission(*sd, PC_PERM_DISABLE_SKILL_USAGE) ){
+		if (pc_has_permission(*sd, PC_PERM_DISABLE_SKILL_USAGE)) {
 			hookStop();
 			return 1;
-			}
+		}
 
-		if (pc_has_permission(*sd, PC_PERM_SKILL_UNCONDITIONAL))
+		if (pc_has_permission(*sd, PC_PERM_SKILL_UNCONDITIONAL)) {
+			hookStop();
 			return 0; // can do any damn thing they want
+		}
 
 		if ((*sd)->blockskill[idx]) {
 			clif->skill_fail((*sd), *skill_id, USESKILL_FAIL_SKILLINTERVAL, 0);
@@ -4041,13 +4029,6 @@ void clif_parse_LoadEndAck_post(int fd, struct map_session_data *sd)
 //Send charname_update every time you see someone in BG
 void clif_getareachar_unit_post(struct map_session_data *sd, struct block_list *bl)
 {
-	
-	struct view_data *vd;
-
-	vd = status->get_viewdata(bl);
-	if (vd == NULL)
-		return;
-
 	if (bl->type == BL_PC) {
 		struct map_session_data *tsd = BL_CAST(BL_PC, bl);
 		clif->charnameupdate(tsd);
@@ -4560,8 +4541,6 @@ HPExport void plugin_init(void)
 		addHookPre(npc, parse_unknown_mapflag, npc_parse_unknown_mapflag_pre);
 		addHookPre(clif, charnameupdate, clif_charnameupdate_pre);
 		addHookPre(clif, pGuildRequestInfo,clif_parse_GuildRequestInfo_pre);
-		addHookPre(clif, sendbgemblem_area,clif_sendbgemblem_area_pre);
-		addHookPre(clif, sendbgemblem_single,clif_sendbgemblem_single_pre);
 		addHookPre(status, get_guild_id, status_get_guild_id_pre);
 		addHookPre(status, get_emblem_id, status_get_emblem_id_pre);
 		addHookPre(guild, isallied, guild_isallied_pre);
