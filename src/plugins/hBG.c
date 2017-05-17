@@ -3713,7 +3713,7 @@ void clif_charnameupdate_pre(struct map_session_data **sd)
 	hookStop();
 }
 //Prevent update Guild Info if you're in BG
-void clif_parse_GuildRequestInfo_pre(int fd, struct map_session_data **sd)
+void clif_parse_GuildRequestInfo_pre(int *fd, struct map_session_data **sd)
 {
 	if ((*sd) && (*sd)->bg_id )
 		hookStop();
@@ -3727,7 +3727,7 @@ void clif_sendbgemblem_area_pre(struct map_session_data **sd)
 		hookStop();
 	return;
 }
-void clif_sendbgemblem_single_pre(int fd, struct map_session_data **sd)
+void clif_sendbgemblem_single_pre(int *fd, struct map_session_data **sd)
 {
 	nullpo_retv(*sd);
 	if ((*sd) && (*sd)->bg_id )
@@ -3768,7 +3768,7 @@ int skillnotok_pre(uint16 *skill_id, struct map_session_data **sd)
 			clif->skill_fail((*sd), *skill_id, USESKILL_FAIL_SKILLINTERVAL, 0);
 			hookStop();
 			return 1;
-			}
+		}
 		hookStop();
 	}
 	return 0;
