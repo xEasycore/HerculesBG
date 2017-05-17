@@ -119,7 +119,7 @@ OnBGModeCommand:
 		dispbottom "#1 - Random",0xFFFFFF;
 		for (.@i = 0; .@i<.TotalArenas; .@i++)
 			dispbottom "#"+(.@i+2)+" - "+.BG_Names$[.@i],.BG_Color2[.@i];			
-			end;
+		end;
 	}
 		
 // @bgsize <1-10> <min> <max>
@@ -133,10 +133,10 @@ OnBGSizeCommand:
 		for (.@i = 0; .@i<.TotalArenas; .@i++)
 			dispbottom "#"+(.@i+1)+" - "+.BG_Names$[.@i],.BG_Color2[.@i];			
 		end;
-		} else if (.@x2 > .@x3) {
+	} else if (.@x2 > .@x3) {
 		message strcharinfo(0), "@bgsize failed: min players is higher than max players. ";
 		end;
-		}	
+	}	
 	if (.@x <= .TotalArenas && .@x > 0) {
 		message strcharinfo(0),"["+.BG_Names$[.@x-1]+"] min players is <"+.@x2+"> and max players is <"+.@x3+">.";
 		setarray .BG_Players_Min[.@x-1],.@x2;
@@ -180,9 +180,9 @@ OnDoJoin:
 // @leavebg
 OnDoLeave:
 	hBG_queue_leave .BG_Queue;
-	if(getmapflag(strcharinfo(3),mf_battleground)){
-	hBG_leave;
-	warp "SavePoint", 0, 0;
+	if (getmapflag(strcharinfo(3),mf_battleground)) {
+		hBG_leave;
+		warp "SavePoint", 0, 0;
 	}
 	end;
 
