@@ -3719,7 +3719,21 @@ void clif_parse_GuildRequestInfo_pre(int *fd, struct map_session_data **sd)
 		hookStop();
 	return;
 }
-
+// Remove Sword Emblem in BG (Unofficial)
+void clif_sendbgemblem_area_pre(struct map_session_data **sd)
+{
+	nullpo_retv(*sd);
+	if ((*sd) && (*sd)->bg_id)
+		hookStop();
+	return;
+}
+void clif_sendbgemblem_single_pre(int *fd, struct map_session_data **sd)
+{
+	nullpo_retv(*sd);
+	if ((*sd) && (*sd)->bg_id)
+		hookStop();
+	return;
+}
 /**
  * Skill Pre-Hooks.
  */
@@ -4541,6 +4555,8 @@ HPExport void plugin_init(void)
 		addHookPre(npc, parse_unknown_mapflag, npc_parse_unknown_mapflag_pre);
 		addHookPre(clif, charnameupdate, clif_charnameupdate_pre);
 		addHookPre(clif, pGuildRequestInfo,clif_parse_GuildRequestInfo_pre);
+		addHookPre(clif, sendbgemblem_area,clif_sendbgemblem_area_pre);
+		addHookPre(clif, sendbgemblem_single,clif_sendbgemblem_single_pre);
 		addHookPre(status, get_guild_id, status_get_guild_id_pre);
 		addHookPre(status, get_emblem_id, status_get_emblem_id_pre);
 		addHookPre(guild, isallied, guild_isallied_pre);
